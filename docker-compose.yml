@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    container_name: my-frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/app
+    networks:
+      - my-network
+
+networks:
+  my-network:
