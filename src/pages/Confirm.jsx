@@ -38,7 +38,7 @@ export default function Confirm() {
   if (!data) return null;
 
   return (
-    <div>
+    <div className="page-container">
       <h2>確認画面</h2>
       <p>メール: {data.email}</p>
       <p>氏名: {data.name}</p>

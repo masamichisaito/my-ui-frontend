@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './UserList.css'; // ← スタイル読み込み
 
 export default function UserList() {
   const [users, setUsers] = useState([]);
@@ -19,15 +20,16 @@ export default function UserList() {
   }, []);
 
   return (
-    <div>
+    <div className="user-list-container">
       <h2>登録済みユーザー一覧</h2>
-      <ul>
-        {users.map((user, idx) => (
-          <li key={idx}>
-            氏名: {user.name}, 年齢: {user.age}, メール: {user.email}, 趣味: {user.hobby}
-          </li>
-        ))}
-      </ul>
+      {users.map((user, idx) => (
+        <div key={idx} className="user-card">
+          <p><strong>氏名:</strong> {user.name}</p>
+          <p><strong>年齢:</strong> {user.age}</p>
+          <p><strong>メール:</strong> {user.email}</p>
+          <p><strong>趣味:</strong> {user.hobby}</p>
+        </div>
+      ))}
       <button onClick={() => navigate('/')}>トップに戻る</button>
     </div>
   );
