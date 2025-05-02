@@ -27,6 +27,7 @@ export default function Register() {
   };
 
   return (
+    <div className="page-container">
     <form onSubmit={handleSubmit}>
       <h2>ユーザー登録</h2>
       <label>メール: <input name="email" value={form.email} onChange={handleChange} required /></label><br />
@@ -35,5 +36,6 @@ export default function Register() {
       <label>趣味: <input name="hobby" value={form.hobby} onChange={handleChange} /></label><br />
       <button type="submit">確認画面へ</button>
     </form>
+    </div>
   );
 }

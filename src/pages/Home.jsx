@@ -5,7 +5,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div>
+    <div className="page-container">
       <h2>ユーザー管理アプリ</h2>
       <button onClick={() => navigate('/register')}>新規登録</button>
       <button onClick={() => navigate('/list')}>登録一覧を見る</button>
