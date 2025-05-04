@@ -1,15 +1,15 @@
 FROM node:20
 
-RUN npm install -g yarn@1.22.21 --force
-
 WORKDIR /app
 
+# 依存関係だけ先にコピーしてインストール（キャッシュ活用）
 COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
-RUN yarn install --check-files
-
+# 残りのファイルコピー
 COPY . .
 
-EXPOSE 5173
+# ビルド実行（任意）
+# RUN yarn build
 
 CMD ["yarn", "dev"]
