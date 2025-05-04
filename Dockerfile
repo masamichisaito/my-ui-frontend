@@ -1,17 +1,15 @@
-# --- build ステージ（Viteなど）
-FROM node:18-alpine AS builder
+FROM node:20
+
 WORKDIR /app
 
-# --- Gitが必要な場合
-RUN apk add --no-cache git
+# 依存関係だけ先にコピーしてインストール（キャッシュ活用）
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
-COPY package*.json ./
-RUN npm install
+# 残りのファイルコピー
 COPY . .
-RUN npm run build
 
-# --- 本番ステージ（Nginxで配信）
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# ビルド実行（任意）
+# RUN yarn build
+
+CMD ["yarn", "dev"]
