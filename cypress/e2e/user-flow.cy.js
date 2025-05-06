@@ -1,11 +1,13 @@
+const API_URL = Cypress.env('API_URL') || 'http://localhost:3000';
+
 beforeEach(() => {
-  cy.request('DELETE', 'http://localhost:3000/__test__/reset-users');
+  cy.request('DELETE', `${API_URL}/test/reset-users`);
 });
 
 describe('ユーザー登録フロー', () => {
   it('正しい情報で登録→一覧に表示', () => {
-    cy.visit('http://localhost:5173');
 
+    cy.visit('http://localhost:5173');
     cy.contains('登録').should('be.visible').click();
 
     cy.get('input[name=email]').type('test@e2e.com');
@@ -85,6 +87,30 @@ describe('ユーザー登録フロー', () => {
     cy.get('input[name=name]').should('have.value', '太郎');
   });
 
-});
-
-
+  describe('ユーザー削除のE2Eテスト', () => {
+      beforeEach(() => {
+        // テスト用データをAPIで登録
+        cy.request('POST', `${API_URL}/test/reset-users`, {
+          users: [{
+              email: 'delete@test.com',
+              name: 'delete',
+              age: 28,
+              hobby: '将棋',
+              isTestData: true
+            }
+        ]});
+  
+        // 一覧画面に遷移
+        cy.visit('http://localhost:5173');
+        cy.get('button').contains('登録一覧を見る').click();
+        cy.contains('一覧').click();
+      });
+  
+      it('ユーザーを削除できること', () => {
+        cy.contains('delete').should('exist');
+        cy.contains('削除').click();
+        cy.on('window:confirm', () => true); // 確認ダイアログOK
+        cy.contains('delete').should('not.exist');
+      });
+    });
+  });

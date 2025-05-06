@@ -32,3 +32,22 @@ jobs:
 
       # - name: Run tests (optional)
       #   run: npm run test
+
+  deploy-production:
+    needs: frontend-ci
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Renderに本番デプロイ
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+# deploy-staging:
+#   needs: build-test-e2e
+#   if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+#   runs-on: ubuntu-latest
+#   steps:
+#     - name: Renderにステージングデプロイ
+#       run: |
+#         curl -X POST ${{ secrets.RENDER_STG_DEPLOY_HOOK_URL }}
+
