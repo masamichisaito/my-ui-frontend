@@ -22,11 +22,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Cypress
-        run: npx cypress install
+      - name: Start Vite server in background
+        run: |
+          npm run dev &  # Viteサーバをバックグラウンドで起動
+          sleep 5        # サーバが起動するまで待機（必要なら秒数調整）
 
-      - name: Run E2E tests
-        run: npm test
+      - name: Run Cypress E2E tests
+        run: npm run test:e2e
+
 
   deploy-frontend:
     needs: frontend-ci
