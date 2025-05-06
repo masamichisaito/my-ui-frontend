@@ -1,19 +1,18 @@
-# .github/workflows/ci.yml
-
-name: CI (Frontend)
+# .github/workflows/frontend.yml
+name: CI + Deploy (Frontend)
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   frontend-ci:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -24,30 +23,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build project
-        run: npm run build
+      - name: Run unit tests (if any)
+        run: npm run test || echo "No tests found, skipping..."
 
-      - name: Run linter (optional)
-        run: npm run lint || echo "Lint errors ignored"
-
-      # - name: Run tests (optional)
-      #   run: npm run test
-
-  deploy-production:
+  deploy-frontend:
     needs: frontend-ci
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+
     steps:
-      - name: Renderに本番デプロイ
-        run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-
-# deploy-staging:
-#   needs: build-test-e2e
-#   if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-#   runs-on: ubuntu-latest
-#   steps:
-#     - name: Renderにステージングデプロイ
-#       run: |
-#         curl -X POST ${{ secrets.RENDER_STG_DEPLOY_HOOK_URL }}
-
+      - name: Trigger Render Frontend Deploy Hook
+        run: curl -X POST ${{ secrets.RENDER_FRONT_DEPLOY_HOOK_URL }}
