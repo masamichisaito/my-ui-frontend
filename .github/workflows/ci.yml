@@ -1,4 +1,3 @@
-# .github/workflows/frontend.yml
 name: CI + Deploy (Frontend)
 
 on:
@@ -23,8 +22,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run unit tests (if any)
-        run: npm run test || echo "No tests found, skipping..."
+      - name: Install Cypress
+        run: npx cypress install
+
+      - name: Run E2E tests
+        run: npm test
 
   deploy-frontend:
     needs: frontend-ci

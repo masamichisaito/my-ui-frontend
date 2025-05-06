@@ -3,12 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "cy:open": "cypress open",
-    "test:e2e": "start-server-and-test preview http://localhost:4173 cypress:run",
-    "cypress:run": "cypress run"
+    "test:e2e": "cypress run",
+    "test": "npm run test:e2e"
   },
 "dependencies": {
   "react": "^19.0.0",
