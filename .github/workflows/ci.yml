@@ -34,7 +34,7 @@ jobs:
       NODE_ENV: test
 
     steps:
-      - name: Checkout
+      - name: Checkout frontend
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -45,18 +45,42 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Start frontend (Vite)
+      - name: Start frontend (Vite) in background
         run: |
           nohup npm run dev > frontend.log 2>&1 &
           sleep 5
 
-      - name: Set up backend
+      - name: Clone backend repo securely
+        run: git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/yourusername/my-api-backend.git ../my-api-backend
+
+      - name: Install backend dependencies
         run: |
-          git clone https://github.com/yourusername/my-api-backend.git ../my-api-backend
           cd ../my-api-backend
           npm install
+
+      - name: Write test .env for backend
+        run: |
+          echo "DB_USERNAME=postgres" >> ../my-api-backend/.env.test
+          echo "DB_PASSWORD=postgres" >> ../my-api-backend/.env.test
+          echo "DB_NAME=my_test_db" >> ../my-api-backend/.env.test
+          echo "DB_HOST=localhost" >> ../my-api-backend/.env.test
+          echo "DB_PORT=5432" >> ../my-api-backend/.env.test
+          echo "NODE_ENV=test" >> ../my-api-backend/.env.test
+
+      - name: Start backend server in background
+        run: |
+          cd ../my-api-backend
           nohup node index.js > backend.log 2>&1 &
           sleep 5
+
+      - name: Wait for backend
+        run: npx wait-on http://localhost:3000
+
+      - name: Wait for frontend
+        run: npx wait-on http://localhost:5173
+
+      - name: Install Cypress
+        run: npx cypress install
 
       - name: Run Cypress E2E tests
         run: npm run test:e2e
