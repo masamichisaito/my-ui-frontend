@@ -10,27 +10,12 @@ jobs:
   frontend-ci:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:13
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: my_test_db
-        options: >-
-          --health-cmd="pg_isready"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     env:
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      DB_NAME: my_test_db
-      DB_HOST: localhost
-      DB_PORT: 5432
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_NAME:     ${{ secrets.DB_NAME }}
+      DB_HOST:     ${{ secrets.DB_HOST }}
+      DB_PORT:     ${{ secrets.DB_PORT }}
       NODE_ENV: test
 
     steps:
@@ -58,14 +43,14 @@ jobs:
           cd ../my-api-backend
           npm install
 
-      - name: Write test .env for backend (Supabase)
+      - name: Write .env.test for backend (Supabase)
         run: |
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" > ../my-api-backend/.env.test
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ../my-api-backend/.env.test
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> ../my-api-backend/.env.test
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> ../my-api-backend/.env.test
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> ../my-api-backend/.env.test
           echo "NODE_ENV=test" >> ../my-api-backend/.env.test
-          echo "DB_HOST=${{ secrets.SUPABASE_DB_HOST }}" >> ../my-api-backend/.env.test
-          echo "DB_PORT=${{ secrets.SUPABASE_DB_PORT }}" >> ../my-api-backend/.env.test
-          echo "DB_NAME=${{ secrets.SUPABASE_DB_NAME }}" >> ../my-api-backend/.env.test
-          echo "DB_USERNAME=${{ secrets.SUPABASE_DB_USERNAME }}" >> ../my-api-backend/.env.test
-          echo "DB_PASSWORD=${{ secrets.SUPABASE_DB_PASSWORD }}" >> ../my-api-backend/.env.test
 
       - name: Start backend server in background
         run: |
@@ -73,10 +58,10 @@ jobs:
           nohup node index.js > backend.log 2>&1 &
           sleep 5
 
-      - name: Wait for backend
+      - name: Wait for backend (API)
         run: npx wait-on http://localhost:3000
 
-      - name: Wait for frontend
+      - name: Wait for frontend (Vite)
         run: npx wait-on http://localhost:5173
 
       - name: Install Cypress
@@ -89,7 +74,6 @@ jobs:
     needs: frontend-ci
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-
     steps:
       - name: Trigger Render Frontend Deploy Hook
         run: curl -X POST ${{ secrets.RENDER_FRONT_DEPLOY_HOOK_URL }}
