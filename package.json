@@ -3,11 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test:e2e": "cypress run",
-    "test": "npm run test:e2e"
+  "start": "node index.js",       // または node server.js
+  "dev": "nodemon index.js",      // または nodemon server.js
+  "test": "jest",
+  "test:e2e": "cypress run"
   },
 "dependencies": {
   "react": "^19.0.0",
