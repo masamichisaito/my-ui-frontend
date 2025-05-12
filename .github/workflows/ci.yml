@@ -1,4 +1,4 @@
-name: CI + Deploy (Frontend)
+name: CI + Deploy (Unified)
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  frontend-ci:
+  unified-ci:
     runs-on: ubuntu-latest
 
     services:
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout frontend
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -37,12 +37,12 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Start frontend (Vite) in background
+      - name: Start frontend
         run: |
           nohup npm run dev > frontend.log 2>&1 &
           sleep 5
 
-      - name: Clone backend repo securely
+      - name: Clone backend securely
         run: git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/masamichisaito/my-api-backend.git ../my-api-backend
 
       - name: Install backend dependencies
@@ -50,7 +50,7 @@ jobs:
           cd ../my-api-backend
           npm install
 
-      - name: Write .env.test for backend (Supabase)
+      - name: Create backend .env.test
         run: |
           echo "DB_USERNAME=${{ secrets.SUPABASE_USERNAME }}" >> ../my-api-backend/.env.test
           echo "DB_PASSWORD=${{ secrets.SUPABASE_PASSWORD }}" >> ../my-api-backend/.env.test
@@ -59,10 +59,15 @@ jobs:
           echo "DB_PORT=${{ secrets.SUPABASE_PORT }}" >> ../my-api-backend/.env.test
           echo "NODE_ENV=test" >> ../my-api-backend/.env.test
 
-      - name: Start backend server in background
+      - name: Run backend unit tests
         run: |
           cd ../my-api-backend
-          nohup node index.js > backend.log 2>&1 &
+          npm test
+
+      - name: Start backend server
+        run: |
+          cd ../my-api-backend
+          nohup node server.js > backend.log 2>&1 &
           sleep 5
 
       - name: Wait for backend
@@ -74,18 +79,17 @@ jobs:
       - name: Install Cypress
         run: npx cypress install
 
-      - name: Run Cypress E2E tests
+      - name: Run Cypress E2E
         run: npm run test:e2e
 
-      - name: Show backend logs if failed
+      - name: Show backend logs on failure
         if: failure()
-        run: cat ../my-api-backend/backend.log || echo "No log found"
+        run: cat ../my-api-backend/backend.log || echo "No backend log found"
 
-  deploy-frontend:
-    needs: frontend-ci
+  deploy:
+    needs: unified-ci
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-
     steps:
-      - name: Trigger Render Frontend Deploy Hook
+      - name: Trigger Render Deploy
         run: curl -X POST ${{ secrets.RENDER_FRONT_DEPLOY_HOOK_URL }}
